@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户管理系统</title>
+    <script>
+        let users = JSON.parse(localStorage.getItem("users")) || [];
+        
+        function saveUsers() {
+            localStorage.setItem("users", JSON.stringify(users));
+            renderUsers();
+        }
+        
+        function addUser() {
+            const name = document.getElementById("name").value;
+            const age = document.getElementById("age").value;
+            const month = document.getElementById("month").value;
+            const job = document.getElementById("job").value;
+            const marriage = document.getElementById("marriage").value;
+            if (!name) return;
+            users.push({ name, age, month, job, marriage });
+            saveUsers();
+        }
+        
+        function deleteUser(index) {
+            users.splice(index, 1);
+            saveUsers();
+        }
+        
+        function renderUsers() {
+            const tableBody = document.getElementById("userTableBody");
+            tableBody.innerHTML = "";
+            users.forEach((user, index) => {
+                tableBody.innerHTML += `<tr>
+                    <td>${user.name}</td>
+                    <td>${user.age}</td>
+                    <td>${user.month}</td>
+                    <td>${user.job}</td>
+                    <td>${user.marriage}</td>
+                    <td><button onclick="deleteUser(${index})">删除</button></td>
+                </tr>`;
+            });
+        }
+        
+        window.onload = renderUsers;
+    </script>
+</head>
+<body>
+    <h2>用户管理系统</h2>
+    <input id="name" placeholder="名字">
+    <input id="age" type="number" placeholder="年龄">
+    <input id="month" placeholder="月份">
+    <input id="job" placeholder="职业">
+    <input id="marriage" placeholder="婚姻状况">
+    <button onclick="addUser()">添加用户</button>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>名字</th>
+                <th>年龄</th>
+                <th>月份</th>
+                <th>职业</th>
+                <th>婚姻状况</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody id="userTableBody"></tbody>
+    </table>
+</body>
+</html>
