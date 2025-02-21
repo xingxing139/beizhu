@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>用户管理系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
         let users = JSON.parse(localStorage.getItem("users")) || [];
         
@@ -32,13 +33,13 @@
             const tableBody = document.getElementById("userTableBody");
             tableBody.innerHTML = "";
             users.forEach((user, index) => {
-                tableBody.innerHTML += `<tr>
-                    <td>${user.name}</td>
-                    <td>${user.age}</td>
-                    <td>${user.month}</td>
-                    <td>${user.job}</td>
-                    <td>${user.marriage}</td>
-                    <td><button onclick="deleteUser(${index})">删除</button></td>
+                tableBody.innerHTML += `<tr class="border-b">
+                    <td class="p-2">${user.name}</td>
+                    <td class="p-2">${user.age}</td>
+                    <td class="p-2">${user.month}</td>
+                    <td class="p-2">${user.job}</td>
+                    <td class="p-2">${user.marriage}</td>
+                    <td class="p-2"><button class="bg-red-500 text-white px-3 py-1 rounded" onclick="deleteUser(${index})">删除</button></td>
                 </tr>`;
             });
         }
@@ -46,26 +47,30 @@
         window.onload = renderUsers;
     </script>
 </head>
-<body>
-    <h2>用户管理系统</h2>
-    <input id="name" placeholder="名字">
-    <input id="age" type="number" placeholder="年龄">
-    <input id="month" placeholder="月份">
-    <input id="job" placeholder="职业">
-    <input id="marriage" placeholder="婚姻状况">
-    <button onclick="addUser()">添加用户</button>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>名字</th>
-                <th>年龄</th>
-                <th>月份</th>
-                <th>职业</th>
-                <th>婚姻状况</th>
-                <th>操作</th>
-            </tr>
-        </thead>
-        <tbody id="userTableBody"></tbody>
-    </table>
+<body class="bg-gray-100 p-6">
+    <div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-lg">
+        <h2 class="text-2xl font-bold mb-4">用户管理系统</h2>
+        <div class="grid grid-cols-2 gap-2 mb-4">
+            <input id="name" placeholder="名字" class="border p-2 rounded">
+            <input id="age" type="number" placeholder="年龄" class="border p-2 rounded">
+            <input id="month" placeholder="月份" class="border p-2 rounded">
+            <input id="job" placeholder="职业" class="border p-2 rounded">
+            <input id="marriage" placeholder="婚姻状况" class="border p-2 rounded">
+        </div>
+        <button onclick="addUser()" class="bg-blue-500 text-white px-4 py-2 rounded w-full">添加用户</button>
+        <table class="w-full mt-4 bg-white border rounded">
+            <thead>
+                <tr class="bg-gray-200 border-b">
+                    <th class="p-2">名字</th>
+                    <th class="p-2">年龄</th>
+                    <th class="p-2">月份</th>
+                    <th class="p-2">职业</th>
+                    <th class="p-2">婚姻状况</th>
+                    <th class="p-2">操作</th>
+                </tr>
+            </thead>
+            <tbody id="userTableBody"></tbody>
+        </table>
+    </div>
 </body>
 </html>
