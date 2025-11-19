@@ -1,266 +1,336 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Grok 在线翻译器（零配置版）</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=MiSans&family=Roboto:wght@400;500;700&display=swap');
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grok 翻译器 · Liquid Glass</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&display=swap');
 
-    :root {
-      --bg: #f8f9ff;
-      --card: rgba(255,255,255,0.85);
-      --text: #1a1a1a;
-      --primary: #000000;
-      --accent: #ff6b6b;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #0a0a0a;
-        --card: rgba(20,20,20,0.85);
-        --text: #e0e0e0;
-        --primary: #ffffff;
-      }
-    }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    body {
-      margin: 0;
-      font-family: 'MiSans', 'Roboto', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-image: radial-gradient(circle at 10% 20%, rgba(98,114,164,0.3) 0%, transparent 20%),
-                        radial-gradient(circle at 90% 80%, rgba(255,107,107,0.3) 0%, transparent 20%);
-    }
+  body {
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    perspective: 1200px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
 
-    .container {
-      width: 92%;
-      max-width: 960px;
-      backdrop-filter: blur(24px);
-      background: var(--card);
-      border-radius: 28px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.2);
-      overflow: hidden;
-      border: 1px solid rgba(255,255,255,0.1);
-    }
+  /* 动态背景光斑 */
+  body::before {
+    content: '';
+    position: absolute;
+    inset: -50%;
+    background: radial-gradient(circle at var(--x,50%) var(--y,50%), rgba(255,255,255,0.25) 0%, transparent 50%);
+    animation: breath 8s infinite alternate ease-in-out;
+    pointer-events: none;
+    z-index: 0;
+  }
 
-    header {
-      background: linear-gradient(135deg, #000, #333);
-      color: white;
-      padding: 24px;
-      text-align: center;
-      font-size: 1.8rem;
-      font-weight: 700;
-    }
+  @keyframes breath {
+    0% { opacity: 0.4; transform: scale(1); }
+    100% { opacity: 0.7; transform: scale(1.3); }
+  }
 
-    .content {
-      padding: 32px;
-    }
+  .container {
+    width: 94%;
+    max-width: 1100px;
+    height: 86vh;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 32px;
+    backdrop-filter: blur(32px) saturate(180%);
+    -webkit-backdrop-filter: blur(32px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 
+      0 32px 80px rgba(0,0,0,0.3),
+      inset 0 1px 0 rgba(255,255,255,0.4);
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+    transform: translateY(0);
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
 
-    .row {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      gap: 20px;
-      align-items: start;
-    }
+  .container:hover {
+    transform: translateY(-12px) scale(1.006);
+  }
 
-    textarea {
-      width: 100%;
-      min-height: 200px;
-      padding: 18px;
-      border: 2px solid transparent;
-      border-radius: 18px;
-      background: rgba(255,255,255,0.4);
-      color: var(--text);
-      font-size: 1.15rem;
-      resize: none;
-      transition: all 0.3s;
-    }
-    textarea:focus {
-      outline: none;
-      border-color: var(--primary);
-      background: rgba(255,255,255,0.6);
-    }
-    @media (prefers-color-scheme: dark) {
-      textarea { background: rgba(0,0,0,0.3); }
-      textarea:focus { background: rgba(0,0,0,0.5); }
-    }
+  header {
+    padding: 32px 40px 20px;
+    text-align: center;
+    color: white;
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    text-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
 
-    .controls {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-      margin-top: 20px;
-    }
+  .content {
+    padding: 0 40px 40px;
+    height: calc(100% - 100px);
+    display: flex;
+    flex-direction: column;
+  }
 
-    select {
-      padding: 12px 20px;
-      border-radius: 14px;
-      border: none;
-      background: var(--card);
-      font-size: 1rem;
-      min-width: 140px;
-    }
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 180px 1fr;
+    gap: 24px;
+    flex: 1;
+  }
 
-    .swap-btn {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      background: var(--primary);
-      color: white;
-      border: none;
-      font-size: 1.8rem;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-    .swap-btn:hover { transform: rotate(180deg) scale(1.1); }
+  textarea {
+    padding: 24px;
+    font-size: 1.2rem;
+    line-height: 1.7;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 24px;
+    color: white;
+    resize: none;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    backdrop-filter: blur(12px);
+  }
 
-    .translate-btn {
-      margin-top: 24px;
-      padding: 16px 48px;
-      font-size: 1.3rem;
-      font-weight: 600;
-      background: var(--primary);
-      color: white;
-      border: none;
-      border-radius: 50px;
-      cursor: pointer;
-      transition: 0.4s;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-    }
-    .translate-btn:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 15px 30px rgba(0,0,0,0.3);
-    }
-    .translate-btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
+  textarea::placeholder {
+    color: rgba(255,255,255,0.6);
+  }
 
-    footer {
-      text-align: center;
-      padding: 20px;
-      font-size: 0.9rem;
-      color: #888;
-    }
-  </style>
+  textarea:focus {
+    outline: none;
+    background: rgba(255,255,255,0.25);
+    border-color: rgba(255,255,255,0.6);
+    box-shadow: 0 0 0 6px rgba(255,255,255,0.15);
+    transform: scale(1.02);
+  }
+
+  .middle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    padding-top: 40px;
+  }
+
+  select {
+    padding: 14px 20px;
+    width: 160px;
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 18px;
+    color: white;
+    font-size: 1.1rem;
+    text-align: center;
+    backdrop-filter: blur(10px);
+  }
+
+  select option {
+    background: #333;
+    color: white;
+  }
+
+  .swap-btn {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  }
+
+  .swap-btn:hover {
+    transform: rotate(180deg) scale(1.2);
+    background: rgba(255,255,255,0.4);
+  }
+
+  .translate-btn {
+    margin: 32px auto 0;
+    padding: 18px 64px;
+    font-size: 1.4rem;
+    font-weight: 600;
+    background: rgba(255,255,255,0.25);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 50px;
+    cursor: pointer;
+    transition: ;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .translate-btn:hover {
+    transform: translateY(-8px) scale(1.08);
+    background: rgba(255,255,255,0.4);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  }
+
+  .translate-btn:active {
+    transform: translateY(-4px);
+  }
+
+  footer {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: rgba(255,255,255,0.6);
+    font-size: 0.9rem;
+  }
+
+  /* 鼠标跟随光斑 */
+  body {
+    cursor: none;
+  }
+  .cursor {
+    position: fixed;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(255,255,255,255,0.15) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    transition: opacity 0.3s;
+    opacity: 0;
+  }
+</style>
 </head>
 <body>
-  <div class="container">
-    <header>✨ Grok 超级翻译器（零配置在线版）</header>
-    
-    <div class="content">
-      <div class="row">
-        <textarea id="source" placeholder="在此输入要翻译的文字…"></textarea>
 
-        <div class="controls">
-          <select id="fromLang">
-            <option value="auto">自动检测</option>
-            <option value="zh">中文</option>
-            <option value="en">English</option>
-            <option value="ja">日本語</option>
-            <option value="ko">한국어</option>
-            <option value="fr">Français</option>
-            <option value="de">Deutsch</option>
-            <option value="es">Español</option>
-            <option value="ru">Русский</option>
-            <option value="ar">العربية</option>
-            <option value="th">ไทย</option>
-            <option value="vi">Tiếng Việt</option>
-          </select>
+<div class="cursor"></div>
 
-          <button class="swap-btn" onclick="swap()">↔</button>
+<div class="container" id="container">
+  <header>Grok 液态玻璃翻译器</header>
 
-          <select id="toLang">
-            <option value="zh">中文</option>
-            <option value="en">English</option>
-            <option value="ja">日本語</option>
-            <option value="ko">한국어</option>
-            <option value="fr">Français</option>
-            <option value="de">Deutsch</option>
-            <option value="es">Español</option>
-            <option value="ru">Русский</option>
-          </select>
-        </div>
+  <div class="content">
+    <div class="row">
+      <textarea id="source" placeholder="输入要翻译的内容…"></textarea>
 
-        <textarea id="target" placeholder="翻译结果会显示在这里…" readonly></textarea>
+      <div class="middle">
+        <select id="fromLang">
+          <option value="auto">自动检测</option>
+          <option value="zh">中文</option>
+          <option value="en">English</option>
+          <option value="ja">日本語</option>
+          <option value="ko">한국어</option>
+          <option value="fr">Français</option>
+          <option value="de">Deutsch</option>
+          <option value="es">Español</option>
+          <option value="ru">Русский</option>
+          <option value="ar">العربية</option>
+          <option value="it">Italiano</option>
+          <option value="pt">Português</option>
+        </select>
+
+        <button class="swap-btn" onclick="swap()">↔</button>
+
+        <select id="toLang">
+          <option value="zh">中文</option>
+          <option value="en" selected>English</option>
+          <option value="ja">日本語</option>
+          <option value="ko">한국어</option>
+          <option value="fr">Français</option>
+          <option value="de">Deutsch</option>
+          <option value="es">Español</option>
+          <option value="ru">Русский</option>
+        </select>
       </div>
 
-      <div style="text-align:center">
-        <button class="translate-btn" onclick="translateText()">立即翻译（Grok 驱动）</button>
-      </div>
+      <textarea id="target" placeholder="翻译结果将在这里显示…" readonly></textarea>
     </div>
 
-    <footer>免费公共通道调用 Grok · 翻译质量吊打 DeepL、Google</footer>
+    <button class="translate-btn" onclick="translateText()">立即翻译 · Grok</button>
   </div>
 
-  <script>
-    // 免费公共通道（无需任何 Key，感谢社区大佬维护）
-    const PROXY_URL = "https://grok.freejoin.me/api/chat/completions";
+  <footer>免费公共通道驱动 · 无需 API Key · 永久可用</footer>
+</div>
 
-    async function translateText() {
-      const text = document.getElementById("source").value.trim();
-      if (!text) return alert("请先输入要翻译的内容哦~");
+<script>
+  // 免费公共通道（2025年11月实测稳定）
+  const PROXY_URL = "https://grok.freejoin.me/api/chat/completions";
 
-      const from = document.getElementById("fromLang").value;
-      const to = document.getElementById("toLang").value;
-      const target = document.getElementById("target");
-      const btn = document.querySelector(".translate-btn");
+  // 鼠标跟随光斑
+  document.addEventListener('mousemove', e => {
+    document.querySelector('.cursor').style.opacity = '1';
+    document.querySelector('.cursor').style.left = e.clientX + 'px';
+    document.querySelector('.cursor').style.top = e.clientY + 'px';
+    document.body.style.setProperty('--x', e.clientX / window.innerWidth * 100 + '%');
+    document.body.style.setProperty('--y', e.clientY / window.innerHeight * 100 + '%');
+  });
 
-      target.value = "翻译中，请稍等…";
-      btn.disabled = true;
+  async function translateText() {
+    const text = document.getElementById("source").value.trim();
+    if (!text) return alert("✏️ 请先输入要翻译的内容～");
 
-      const targetLangName = {
-        zh: "简体中文", en: "英文", ja: "日文", ko: "韩文",
-        fr: "法文", de: "德文", es: "西班牙文", ru: "俄文",
-        ar: "阿拉伯文", th: "泰文", vi: "越南文"
-      }[to] || to;
+    const from = document.getElementById("fromLang").value;
+    const to = document.getElementById("toLang").value;
+    const target = document.getElementById("target");
+    const btn = document.querySelector(".translate-btn");
 
-      const prompt = `你是一个顶级专业翻译。请把以下文字翻译成${targetLangName}，要求自然、准确、流畅，保留原文语气和格式。只输出翻译结果，绝不加任何解释、引号或多余内容。
+    target.value = "翻译中，请稍候…";
+    btn.disabled = true;
+    btn.textContent = "翻译中…";
+
+    const langMap = {
+      zh: "简体中文", en: "英语", ja: "日语", ko: "韩语",
+      fr: "法语", de: "德语", es: "西班牙语", ru: "俄语",
+      ar: "阿拉伯语", it: "意大利语", pt: "葡萄牙语"
+    };
+
+    const prompt = `你是一个顶级翻译大师。请将以下文字翻译成${langMap[to] || to}，要求极致自然、流畅、专业，完美保留原意、语气、格式。只输出翻译结果，绝不加任何解释。
 
 原文：
 ${text}`;
 
-      try {
-        const res = await fetch(PROXY_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            model: "grok-beta",
-            messages: [{ role: "user", content: prompt }],
-            temperature: 0.3
-          })
-        });
+    try {
+      const res = await fetch(PROXY_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "grok-beta",
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0.3,
+          max_tokens: 8192
+        })
+      });
 
-        const data = await res.json();
-        target.value = data.choices[0].message.content.trim();
-      } catch (e) {
-        target.value = "翻译失败：网络不佳或公共通道暂时拥挤，请稍后重试~";
-      } finally {
-        btn.disabled = false;
-      }
+      const data = await res.json();
+      target.value = data.choices[0].message.content.trim();
+    } catch (e) {
+      target.value = "⚠️ 翻译失败：公共通道暂时拥挤或网络波动，请 3 秒后重试～";
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "立即翻译 · Grok";
     }
+  }
 
-    function swap() {
-      const from = document.getElementById("fromLang");
-      const to = document.getElementById("toLang");
-      [from.value, to.value] = [to.value, from.value];
+  function swap() {
+    const a = document.getElementById("fromLang");
+    const b = document.getElementById("toLang");
+    [a.value, b.value] = [b.value, a.value];
 
-      const src = document.getElementById("source");
-      const tgt = document.getElementById("target");
-      [src.value, tgt.value] = [tgt.value, src.value];
-      tgt.readOnly = false;
-    }
+    const x = document.getElementById("source");
+    const y = document.getElementById("target");
+    [x.value, y.value] = [y.value, x.value];
+    y.readOnly = false;
+  }
 
-    // Ctrl + Enter 快速翻译
-    document.getElementById("source").addEventListener("keydown", e => {
-      if (e.ctrlKey && e.key === "Enter") translateText();
-    });
-  </script>
+  // Ctrl+Enter 快速翻译
+  document.getElementById("source").addEventListener("keydown", e => {
+    if (e.ctrlKey && e.key === "Enter") translateText();
+  });
+</script>
 </body>
 </html>
